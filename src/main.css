@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+    background-color: rgb(241, 238, 238);
+}
+.flip-box {
+
+    
+    height:90px;
+    width: 90px;
+    perspective: 1000px;
+}
+
+.flip-box-inner {
+    position: relative;
+  
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+.flip {
+    transform: rotateY(180deg);
+}
+
+.flip-box-front,
+.flip-box-back {
+    position: absolute;
+   
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+
+
+.flip-box-back {
+  
+    transform: rotateY(180deg);
+}
