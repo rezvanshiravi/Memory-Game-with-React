@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Card } from "./components/Card";
 import { Header } from "./components/Header";
 import { Modal } from "./components/Modal";
@@ -9,13 +10,12 @@ const App = () => {
     yourScore,
     bestScore,
     showModal,
-    disablecards,
+
     frontRef,
     handleClickCard,
     handleStart,
     handleHideModal,
     checkDisability,
-    openCards,
   } = useMemoryGame();
 
   return (
@@ -41,11 +41,7 @@ const App = () => {
                 key={index}
                 imageCard={item}
                 ref={(el) => (frontRef.current[index] = el)}
-                isDisabled={disablecards || checkDisability(item.name)}
-                isFlipped={openCards.includes({
-                  item: item.name,
-                  index: index,
-                })}
+                isDisabled={checkDisability(item.name)}
                 onClick={(e) => handleClickCard(e, item, index)}
               />
             );

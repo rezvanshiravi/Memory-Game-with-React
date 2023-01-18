@@ -49,9 +49,8 @@ const useMemoryGame = () => {
     useShuffleCards([...imageArray, ...imageArray])
   );
 
-  const [openCards, setOpenCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
-  const [disablecards, setDisableCards] = useState(true);
+
   const [score, setScore] = useState({
     yourScore: 0,
     bestScore: 1000,
@@ -61,17 +60,15 @@ const useMemoryGame = () => {
 
   const frontRef = useRef([]);
   const { yourScore, bestScore } = score;
-
+  let openCardsArray = [];
   const handleStart = () => {
     frontRef.current.map((item) => (item.style.transform = ""));
     setMatchedCards([]);
-    setOpenCards([]);
+
     setScore((score) => {
       return { ...score, yourScore: 0 };
     });
     setShowModal(false);
-
-    setDisableCards(false);
 
     setTimeout(
       () => {
@@ -94,29 +91,41 @@ const useMemoryGame = () => {
   };
 
   const checkMatchedCards = () => {
-    if (openCards[0].item == openCards[1].item) {
-      setMatchedCards((matchedCards) => [...matchedCards, openCards[0].item]);
-    } else {
-      openCards.map(
-        (cards) => (frontRef.current[cards.index].style.transform = "")
-      );
+    if (openCardsArray.length === 2) {
+      if (openCardsArray[0].name == openCardsArray[1].name) {
+        setMatchedCards((matchedCards) => [
+          ...matchedCards,
+          openCardsArray[0].name,
+        ]);
+      } else {
+        setTimeout(() => {
+          openCardsArray.map(
+            (cards) => (frontRef.current[cards.index].style.transform = "")
+          );
+          openCardsArray = [];
+        }, 500);
+      }
+
+      setScore((score) => {
+        return { ...score, yourScore: score.yourScore + 1 };
+      });
+      // openCardsArray = [];
+      //setDisableCards(false);
     }
-
-    setOpenCards([]);
-
-    setDisableCards(false);
-    setScore((score) => {
-      return { ...score, yourScore: score.yourScore + 1 };
-    });
   };
 
   const handleClickCard = (e, item, index) => {
-    frontRef.current[index].style.transform = "rotateY(180deg)";
+    e.preventDefault();
+    const name = item.name;
+    if (
+      openCardsArray.length < 2 &&
+      !openCardsArray.some((cards) => cards.index === index)
+    ) {
+      frontRef.current[index].style.transform = "rotateY(180deg)";
 
-    setOpenCards((openCards) => [
-      ...openCards,
-      { item: item.name, index: index },
-    ]);
+      openCardsArray.push({ name, index });
+      checkMatchedCards();
+    }
   };
 
   const checkDisability = (name) => {
@@ -128,47 +137,27 @@ const useMemoryGame = () => {
   };
 
   useEffect(() => {
-    let timeoutd = null;
-
-    if (openCards.length == 2) {
-      setDisableCards(true);
-      timeoutd = setTimeout(() => {
-        checkMatchedCards();
-      }, 500);
-    }
-    return () => {
-      if (openCards.length == 2 && timeoutd) clearTimeout(timeoutd);
-    };
-  }, [openCards]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    if (matchedCards.length == imageArray.length && !ignore) {
+    if (matchedCards.length == imageArray.length) {
       setShowModal(true);
-      const highScore = Math.min(yourScore, bestScore);
+      const highScore = Math.min(score.yourScore, score.bestScore);
       setScore((score) => {
         return { ...score, bestScore: highScore };
       });
 
       localStorage.setItem("bestScore", bestScore);
     }
-    return () => {
-      ignore = true;
-    };
   }, [matchedCards]);
   return {
     imgCards,
     yourScore,
     bestScore,
     showModal,
-    disablecards,
+
     frontRef,
     handleClickCard,
     handleStart,
     handleHideModal,
     checkDisability,
-    openCards,
   };
 };
 export { useMemoryGame };
