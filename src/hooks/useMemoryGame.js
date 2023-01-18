@@ -78,9 +78,8 @@ const useMemoryGame = () => {
         frontRef.current.map(
           (item) => (item.style.transform = "rotateY(180deg)")
         );
-        console.log(1);
+
         setimgArrayCards(useShuffleCards([...imageArray, ...imageArray]));
-        console.log(2);
       },
 
       1000
@@ -95,32 +94,29 @@ const useMemoryGame = () => {
   };
 
   const checkMatchedCards = () => {
-    if (openCards.length == 2) {
-      if (openCards[0].item == openCards[1].item) {
-        setMatchedCards((matchedCards) => [...matchedCards, openCards[0].item]);
-      } else {
-        openCards.map(
-          (cards) => (frontRef.current[cards.index].style.transform = "")
-        );
-      }
-      setOpenCards([]);
-      setDisableCards(false);
-      setScore((score) => {
-        return { ...score, yourScore: score.yourScore + 1 };
-      });
+    if (openCards[0].item == openCards[1].item) {
+      setMatchedCards((matchedCards) => [...matchedCards, openCards[0].item]);
+    } else {
+      openCards.map(
+        (cards) => (frontRef.current[cards.index].style.transform = "")
+      );
     }
+
+    setOpenCards([]);
+
+    setDisableCards(false);
+    setScore((score) => {
+      return { ...score, yourScore: score.yourScore + 1 };
+    });
   };
 
   const handleClickCard = (e, item, index) => {
     frontRef.current[index].style.transform = "rotateY(180deg)";
+
     setOpenCards((openCards) => [
       ...openCards,
       { item: item.name, index: index },
     ]);
-
-    if (openCards.length === 1) {
-      setDisableCards(true);
-    }
   };
 
   const checkDisability = (name) => {
@@ -132,15 +128,23 @@ const useMemoryGame = () => {
   };
 
   useEffect(() => {
+    let timeoutd = null;
+
     if (openCards.length == 2) {
-      setTimeout(() => {
+      setDisableCards(true);
+      timeoutd = setTimeout(() => {
         checkMatchedCards();
       }, 500);
     }
+    return () => {
+      if (openCards.length == 2 && timeoutd) clearTimeout(timeoutd);
+    };
   }, [openCards]);
 
   useEffect(() => {
-    if (matchedCards.length == imageArray.length) {
+    let ignore = false;
+
+    if (matchedCards.length == imageArray.length && !ignore) {
       setShowModal(true);
       const highScore = Math.min(yourScore, bestScore);
       setScore((score) => {
@@ -149,6 +153,9 @@ const useMemoryGame = () => {
 
       localStorage.setItem("bestScore", bestScore);
     }
+    return () => {
+      ignore = true;
+    };
   }, [matchedCards]);
   return {
     imgCards,
